@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Diet AI</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='leafGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2310b981'/%3E%3Cstop offset='100%25' stop-color='%23059669'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='60' cy='60' r='56' fill='none' stroke='url(%23leafGrad)' stroke-width='5' opacity='0.25'/%3E%3Cpath d='M48 26 C40 20 44 12 52 14 C60 18 64 28 62 36 C58 46 48 44 48 26Z' fill='url(%23leafGrad)'/%3E%3Ctext x='60' y='80' text-anchor='middle' font-family='Segoe UI, Inter, sans-serif' font-size='42' font-weight='700' fill='%23ffffff'%3E%D8%AE%D8%B3%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0e121a;
+      --surface: #141a24;
+      --surface-strong: #1f2937;
+      --primary: #5f8ef9;
+      --accent: #7dd3fc;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --border: rgba(148, 163, 184, 0.18);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+    }
+
+    html[data-theme="light"] {
+      --bg: #f8fafb;
+      --surface: #ffffff;
+      --surface-strong: #f0f4f8;
+      --primary: #10b981;
+      --accent: #059669;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: rgba(31, 41, 55, 0.08);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, rgba(95, 142, 249, 0.18), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(125, 211, 252, 0.12), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    html[data-theme="light"] body {
+      background: linear-gradient(135deg, #f0f9ff, #f8fafb);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .control-btn {
+      border: none;
+      background: rgba(95, 142, 249, 0.1);
+      border: 1px solid rgba(95, 142, 249, 0.2);
+      color: var(--accent);
+      border-radius: 12px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .control-btn:hover {
+      background: rgba(95, 142, 249, 0.2);
+      border-color: rgba(95, 142, 249, 0.4);
+    }
+
+    html[data-theme="light"] .control-btn {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.2);
+      color: var(--primary);
+    }
+
+    html[data-theme="light"] .control-btn:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .app-shell {
+      width: min(980px, 100%);
+      display: grid;
+      gap: 24px;
+      padding: 28px;
+      border-radius: 36px;
+      border: 1px solid var(--border);
+      background: rgba(12, 17, 26, 0.94);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .app-shell {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: rgba(31, 41, 55, 0.1);
+    }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--accent);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .brand svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    html[data-theme="light"] .brand {
+      color: var(--primary);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.05;
+    }
+
+    p.lead {
+      max-width: 700px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(20, 34, 53, 0.95), rgba(15, 20, 30, 0.98));
+      border-radius: 28px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 24px;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.03);
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .card {
+      background: linear-gradient(180deg, rgba(240, 244, 248, 0.95), rgba(248, 250, 251, 0.98));
+      border-color: rgba(31, 41, 55, 0.1);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 16px;
+      background: rgba(15, 20, 30, 0.9);
+      color: var(--text);
+      padding: 14px 16px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(95, 142, 249, 0.7);
+      box-shadow: 0 0 0 5px rgba(95, 142, 249, 0.1);
+    }
+
+    html[data-theme="light"] input,
+    html[data-theme="light"] select {
+      background: rgba(31, 41, 55, 0.06);
+      border-color: rgba(31, 41, 55, 0.15);
+    }
+
+    html[data-theme="light"] input:focus,
+    html[data-theme="light"] select:focus {
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.1);
+    }
+
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 16px;
+      background: rgba(15, 20, 30, 0.9);
+      color: var(--text);
+      padding: 14px 16px;
+      font-size: 1rem;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(95, 142, 249, 0.7);
+      box-shadow: 0 0 0 5px rgba(95, 142, 249, 0.1);
+    }
+
+    html[data-theme="light"] textarea {
+      background: rgba(31, 41, 55, 0.06);
+      border-color: rgba(31, 41, 55, 0.15);
+    }
+
+    html[data-theme="light"] textarea:focus {
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.1);
+    }
+
+    .generate-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #5f8ef9, #7dd3fc);
+      color: #0f172a;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 16px 30px rgba(95, 142, 249, 0.2);
+    }
+
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 35px rgba(95, 142, 249, 0.24);
+    }
+
+    html[data-theme="light"] .generate-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 16px 30px rgba(16, 185, 129, 0.2);
+    }
+
+    html[data-theme="light"] .generate-btn:hover {
+      box-shadow: 0 20px 35px rgba(16, 185, 129, 0.24);
+    }
+
+    .hint-bar,
+    .summary-pill {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(95, 142, 249, 0.14);
+      background: rgba(95, 142, 249, 0.1);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .hint-bar,
+    html[data-theme="light"] .summary-pill {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.2);
+      color: var(--primary);
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .diet-grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 12px;
+    }
+
+    .day-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 26px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      background: rgba(12, 18, 29, 0.95);
+      padding: 20px;
+      transform: translateY(18px);
+      opacity: 0;
+      animation: fadeInUp 0.55s forwards ease;
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .day-card {
+      background: rgba(240, 244, 248, 0.98);
+      border-color: rgba(31, 41, 55, 0.1);
+    }
+
+    .day-card:nth-child(1) { animation-delay: 0.06s; }
+    .day-card:nth-child(2) { animation-delay: 0.12s; }
+    .day-card:nth-child(3) { animation-delay: 0.18s; }
+    .day-card:nth-child(4) { animation-delay: 0.24s; }
+    .day-card:nth-child(5) { animation-delay: 0.28s; }
+    .day-card:nth-child(6) { animation-delay: 0.32s; }
+    .day-card:nth-child(7) { animation-delay: 0.36s; }
+
+    .day-card::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      right: -30px;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: rgba(95, 142, 249, 0.12);
+      pointer-events: none;
+    }
+
+    .day-title {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .day-title h3 {
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .macro-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .macro-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(95, 142, 249, 0.1);
+      border-radius: 18px;
+      padding: 14px 16px;
+      text-align: center;
+      color: var(--text);
+      font-size: 0.92rem;
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .macro-pill {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.15);
+    }
+
+    .macro-pill strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .meal-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .meal-item {
+      background: rgba(19, 30, 48, 0.96);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      display: grid;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .meal-item {
+      background: rgba(31, 41, 55, 0.05);
+      border-color: rgba(31, 41, 55, 0.1);
+    }
+
+    .meal-item strong {
+      color: var(--text);
+      font-size: 0.98rem;
+    }
+
+    .meal-item span {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.6;
+    }
+
+    .assistant-tip {
+      margin-bottom: 18px;
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed rgba(148, 163, 184, 0.16);
+      color: var(--text);
+      line-height: 1.7;
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .assistant-tip {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .notification-banner {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      background: rgba(16, 185, 129, 0.95);
+      color: #0f172a;
+      padding: 14px 22px;
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.22);
+      font-weight: 700;
+      min-width: 280px;
+      max-width: 92%;
+      text-align: center;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      opacity: 1;
+    }
+
+    .notification-banner.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) translateY(-10px);
+    }
+
+    .notification-banner.warning {
+      background: rgba(249, 115, 22, 0.95);
+      color: #fff;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.7;
+      margin-top: 12px;
+    }
+
+    .tracking-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .tracking-item {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tracking-item label {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .tracking-summary {
+      background: rgba(95, 142, 249, 0.1);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .summary-stat {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .exercise-list {
+      background: rgba(19, 30, 48, 0.96);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .exercise-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(148, 163, 184, 0.1);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .exercise-item span:last-child {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .alert-items {
+      display: grid;
+      gap: 12px;
+    }
+
+    .alert-item {
+      padding: 16px;
+      border-radius: 16px;
+      border-left: 4px solid;
+      background: rgba(95, 142, 249, 0.1);
+      border-color: var(--accent);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .alert-water {
+      background: rgba(125, 211, 252, 0.1);
+      border-color: #7dd3fc;
+    }
+
+    .alert-exercise {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: #22c55e;
+    }
+
+    .alert-sleep {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: #a855f7;
+    }
+
+    .sleep-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(95, 142, 249, 0.1), rgba(125, 211, 252, 0.1));
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid rgba(95, 142, 249, 0.2);
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .macro-row {
+        grid-template-columns: 1fr;
+      }
+
+      .tracking-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .sleep-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <select id="langSelect" class="control-btn" title="Select Language">
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+      <option value="fr">Français</option>
+      <option value="es">Español</option> 
+      <option value="de">Deutsch</option>
+    </select>
+    <button id="themeToggle" class="control-btn" title="Toggle Theme">☀️ Light</button>
+  </div>
+
+  <div id="notificationBanner" class="notification-banner hidden"></div>
+
+  <main class="app-shell">
+    <section class="hero">
+      <div class="brand">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r="56" fill="none" stroke="url(#leafGrad)" stroke-width="4" opacity="0.25"/>
+          <path d="M48 28 C40 20 44 12 52 14 C60 18 64 28 62 36 C58 46 48 44 48 28Z" fill="url(#leafGrad)"/>
+          <text x="60" y="84" text-anchor="middle" font-family="Segoe UI, Inter, sans-serif" font-size="44" font-weight="700" fill="currentColor">خس</text>
+        </svg>
+        <span id="brandText">Smart Diet AI</span>
+      </div>
+      <h1 id="heroTitle">AI Nutrition Coach</h1>
+      <p class="lead" id="heroLead">Generate a personalized 7-day diet plan that adapts to age, goal, activity level, and nutritional needs. Realistic meal structure, balanced macros, and age-aware guidance.</p>
+    </section>
+
+    <section class="card">
+      <div class="hint-bar" id="hintBar">Fill in your details and press the button to generate a customized weekly plan.</div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="age" id="labelAge">Age</label>
+          <input id="age" type="number" min="4" max="100" placeholder="e.g. 28" />
+        </div>
+        <div class="field">
+          <label for="weight" id="labelWeight">Weight (kg)</label>
+          <input id="weight" type="number" min="12" max="180" placeholder="e.g. 72" />
+        </div>
+        <div class="field">
+          <label for="height" id="labelHeight">Height (cm)</label>
+          <input id="height" type="number" min="90" max="230" placeholder="e.g. 175" />
+        </div>
+        <div class="field">
+          <label for="goal" id="labelGoal">Goal</label>
+          <select id="goal">
+            <option value="maintain" id="optMaintain">Maintain health</option>
+            <option value="lose" id="optLose">Lose fat</option>
+            <option value="gain" id="optGain">Gain muscle</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="activity" id="labelActivity">Activity level</label>
+          <select id="activity">
+            <option value="low" id="optLow">Low</option>
+            <option value="medium" id="optMedium">Medium</option>
+            <option value="high" id="optHigh">High</option>
+          </select>
+        </div>
+        <div class="field full-width">
+          <button id="generateBtn" class="generate-btn">Generate AI Diet Plan</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="results" class="card hidden" aria-live="polite">
+      <div class="assistant-tip" id="assistantTip"></div>
+      <div class="results-header">
+        <h2 id="weeklyTitle">Weekly diet plan</h2>
+        <div class="summary-pill" id="summaryText">Calories • 0 kcal</div>
+      </div>
+      <div class="diet-grid" id="dietGrid"></div>
+      <p class="note" id="noteText">The AI plan is created to match your age group and goal. Every day includes breakfast, snacks, lunch, and dinner with a consistent macro balance.</p>
+    </section>
+
+    <section id="chat" class="card">
+      <h2 id="trackingTitle">Daily Calorie Tracker</h2>
+      <div class="tracking-grid">
+        <div class="tracking-item">
+          <label id="labelBreakfast">Breakfast (kcal)</label>
+          <input type="number" id="calorieBreakfast" min="0" placeholder="0">
+        </div>
+        <div class="tracking-item">
+          <label id="labelLunch">Lunch (kcal)</label>
+          <input type="number" id="calorieLunch" min="0" placeholder="0">
+        </div>
+        <div class="tracking-item">
+          <label id="labelSnack">Snacks (kcal)</label>
+          <input type="number" id="calorieSnack" min="0" placeholder="0">
+        </div>
+        <div class="tracking-item">
+          <label id="labelDinner">Dinner (kcal)</label>
+          <input type="number" id="calorieDinner" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="tracking-summary">
+        <div class="summary-stat"><strong id="totalCalories">0</strong> / <span id="targetCalories">0</span> kcal</div>
+        <button class="generate-btn" id="saveCaloriesBtn" style="width: auto; padding: 8px 16px; font-size: 0.9rem;">Save Tracking</button>
+      </div>
+    </section>
+
+    <section id="exercises" class="card">
+      <h2 id="exerciseTitle">Exercises & Activities</h2>
+      <p class="note">The app chooses the best exercises for your body and goal. You only set your preferred workout time.</p>
+      <div class="exercise-list" id="exerciseList"></div>
+      <div class="field" style="display: grid; gap: 12px; margin-top: 12px;">
+        <label for="preferredWorkoutTime">Preferred workout time</label>
+        <input type="time" id="preferredWorkoutTime" />
+        <button class="generate-btn" id="saveWorkoutTimeBtn" style="width: 100%; padding: 12px;">Save Workout Time</button>
+      </div>
+    </section>
+
+    <section id="alerts" class="card">
+      <h2 id="alertTitle">Smart Notifications</h2>
+      <div class="alert-items">
+        <div class="alert-item alert-info">
+          <strong>⏰ Meal Time:</strong> <span id="mealReminder">Set your meal times</span>
+        </div>
+        <div class="alert-item alert-water">
+          <strong>💧 Hydration:</strong> <span id="waterReminder">Drink 8 glasses of water</span>
+        </div>
+        <div class="alert-item alert-exercise">
+          <strong>🏃 Activity:</strong> <span id="activityReminder">Time to move!</span>
+        </div>
+        <div class="alert-item alert-sleep">
+          <strong>😴 Sleep Goal:</strong> <span id="sleepReminder">Target: 7-8 hours</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="card">
+      <h2 id="dashboardTitle">Your Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="statCalories">0</div>
+          <div class="stat-label">Today's Calories</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statExercises">0</div>
+          <div class="stat-label">Exercises Done</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statSleep">0h</div>
+          <div class="stat-label">Sleep Duration</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statEnergy">-</div>
+          <div class="stat-label">Energy Level</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const langSelect = document.getElementById('langSelect');
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+
+    const translations = {
+      en: {
+        brandText: 'Smart Diet AI',
+        heroTitle: 'AI Nutrition Coach',
+        heroLead: 'Generate a personalized 7-day diet plan that adapts to age, goal, activity level, and nutritional needs. Realistic meal structure, balanced macros, and age-aware guidance.',
+        hintBar: 'Fill in your details and press the button to generate a customized weekly plan.',
+        labelAge: 'Age',
+        labelWeight: 'Weight (kg)',
+        labelHeight: 'Height (cm)',
+        labelGoal: 'Goal',
+        labelActivity: 'Activity level',
+        optMaintain: 'Maintain health',
+        optLose: 'Lose fat',
+        optGain: 'Gain muscle',
+        optLow: 'Low',
+        optMedium: 'Medium',
+        optHigh: 'High',
+        generateBtn: 'Generate AI Diet Plan',
+        weeklyTitle: 'Weekly diet plan',
+        noteText: 'The AI plan is created to match your age group and goal. Every day includes breakfast, snacks, lunch, and dinner with a consistent macro balance.',
+        breakfast: 'Breakfast',
+        morningSnack: 'Morning Snack',
+        lunch: 'Lunch',
+        afternoonSnack: 'Afternoon Snack',
+        dinner: 'Dinner',
+        protein: 'Protein',
+        carbs: 'Carbs',
+        fats: 'Fats',
+        day: 'Day',
+        kcal: 'kcal',
+        calories: 'Calories',
+        alertAge: 'Please enter age, weight and height.',
+        alertRange: 'Please provide realistic values in the valid range.',
+        childLabel: 'Child',
+        teenLabel: 'Teen',
+        adultLabel: 'Adult',
+        elderlyLabel: 'Elderly',
+        lose: 'A calorie-conscious plan focused on lean protein, fiber, and steady energy.',
+        maintain: 'A balanced plan for stable energy and overall well-being.',
+        gain: 'A nutrient-rich plan to support muscle growth and recovery.',
+        assistantPrefix: 'AI Nutrition Assistant:',
+        trackingTitle: '📊 Daily Calorie Tracker',
+        labelBreakfast: 'Breakfast (kcal)',
+        labelLunch: 'Lunch (kcal)',
+        labelSnack: 'Snacks (kcal)',
+        labelDinner: 'Dinner (kcal)',
+        exerciseTitle: '💪 Exercises & Activities',
+        alertTitle: '🔔 Smart Notifications',
+        sleepTitle: '😴 Sleep & Energy Analysis',
+        labelSleepHours: 'Sleep Hours',
+        labelEnergyLevel: 'Energy Level (1-10)',
+        labelSleepQuality: 'Sleep Quality',
+        dashboardTitle: '📈 Your Statistics'
+      },
+      ar: {
+        brandText: 'خس - نظام صحي ذكي',
+        heroTitle: 'مساعد التغذية الذكي',
+        heroLead: 'أنشئ خطة نظام غذائي شخصية لمدة 7 أيام تتكيف مع العمر والهدف والنشاط ومستويات التغذية. هيكل وجبات واقعي، توازن ماكرو صحيح، وإرشادات مراعية للعمر.',
+        hintBar: 'أدخل تفاصيلك واضغط الزر لإنشاء خطة أسبوعية مخصصة.',
+        labelAge: 'العمر',
+        labelWeight: 'الوزن (كغ)',
+        labelHeight: 'الارتفاع (سم)',
+        labelGoal: 'الهدف',
+        labelActivity: 'مستوى النشاط',
+        optMaintain: 'الحفاظ على الصحة',
+        optLose: 'فقدان الدهون',
+        optGain: 'اكتساب العضلات',
+        optLow: 'منخفض',
+        optMedium: 'متوسط',
+        optHigh: 'عالي',
+        generateBtn: 'إنشاء خطة النظام الغذائي الذكية',
+        weeklyTitle: 'خطة أسبوعية',
+        noteText: 'تم إنشاء الخطة الذكية لمطابقة مجموعة العمر والهدف الخاص بك. يتضمن كل يوم الإفطار والوجبات الخفيفة والغداء والعشاء مع توازن ماكرو متسق.',
+        breakfast: 'الإفطار',
+        morningSnack: 'وجبة خفيفة صباحية',
+        lunch: 'الغداء',
+        afternoonSnack: 'وجبة خفيفة بعد الظهر',
+        dinner: 'العشاء',
+        protein: 'بروتين',
+        carbs: 'كربوهيدرات',
+        fats: 'دهون',
+        day: 'اليوم',
+        kcal: 'كيلو كالوري',
+        calories: 'السعرات الحرارية',
+        alertAge: 'يرجى إدخال العمر والوزن والارتفاع.',
+        alertRange: 'يرجى تقديم قيم واقعية ضمن النطاق الصحيح.',
+        childLabel: 'طفل',
+        teenLabel: 'مراهق',
+        adultLabel: 'بالغ',
+        elderlyLabel: 'مسن',
+        lose: 'خطة واعية بالسعرات الحرارية تركز على البروتين الخالي من الدهون والألياف والطاقة المستقرة.',
+        maintain: 'خطة متوازنة للطاقة المستقرة والرفاهية العامة.',
+        gain: 'خطة غنية بالعناصر الغذائية لدعم نمو العضلات والتعافي.',
+        assistantPrefix: 'مساعد التغذية الذكي:',
+
+
+
+
+
+
+        trackingTitle: '📊 متتبع السعرات الحرارية اليومية',
+        labelBreakfast: 'الإفطار (كيلو كالوري)',
+        labelLunch: 'الغداء (كيلو كالوري)',
+        labelSnack: 'الوجبات الخفيفة (كيلو كالوري)',
+        labelDinner: 'العشاء (كيلو كالوري)',
+        exerciseTitle: '💪 التمارين والأنشطة',
+        alertTitle: '🔔 الإشعارات الذكية',
+        sleepTitle: '😴 تحليل النوم والطاقة',
+        labelSleepHours: 'ساعات النوم',
+        labelEnergyLevel: 'مستوى الطاقة (1-10)',
+        labelSleepQuality: 'جودة النوم',
+        dashboardTitle: '📈 إحصائياتك'
+      },
+      fr: {
+        brandText: 'Smart Diet IA',
+        heroTitle: 'Coach en Nutrition IA',
+        heroLead: 'Générez un plan alimentaire personnalisé de 7 jours qui s\'adapte à l\'âge, l\'objectif, le niveau d\'activité et les besoins nutritionnels. Structure réaliste des repas, macros équilibrées et conseils adaptés à l\'âge.',
+        hintBar: 'Remplissez vos détails et appuyez sur le bouton pour générer un plan hebdomadaire personnalisé.',
+        labelAge: 'Âge',
+        labelWeight: 'Poids (kg)',
+        labelHeight: 'Hauteur (cm)',
+        labelGoal: 'Objectif',
+        labelActivity: 'Niveau d\'activité',
+        optMaintain: 'Maintenir la santé',
+        optLose: 'Perdre du poids',
+        optGain: 'Prendre du muscle',
+        optLow: 'Faible',
+        optMedium: 'Moyen',
+        optHigh: 'Élevé',
+        generateBtn: 'Générer le Plan Alimentaire IA',
+        weeklyTitle: 'Plan hebdomadaire',
+        noteText: 'Le plan IA est créé pour correspondre à votre groupe d\'âge et à votre objectif. Chaque jour comprend le petit-déjeuner, les collations, le déjeuner et le dîner avec un équilibre macro cohérent.',
+        breakfast: 'Petit-déjeuner',
+        morningSnack: 'Collation matinale',
+        lunch: 'Déjeuner',
+        afternoonSnack: 'Collation après-midi',
+        dinner: 'Dîner',
+        protein: 'Protéine',
+        carbs: 'Glucides',
+        fats: 'Lipides',
+        day: 'Jour',
+        kcal: 'kcal',
+        calories: 'Calories',
+        alertAge: 'Veuillez entrer l\'âge, le poids et la hauteur.',
+        alertRange: 'Veuillez fournir des valeurs réalistes dans la plage valide.',
+        childLabel: 'Enfant',
+        teenLabel: 'Ado',
+        adultLabel: 'Adulte',
+        elderlyLabel: 'Personne âgée',
+        lose: 'Un plan conscient des calories axé sur les protéines maigres, les fibres et l\'énergie stable.',
+        maintain: 'Un plan équilibré pour une énergie stable et le bien-être global.',
+        gain: 'Un plan riche en nutriments pour soutenir la croissance musculaire et la récupération.',
+        assistantPrefix: 'Assistante Nutritionnelle IA:'
+      },
+      es: {
+        brandText: 'Dieta Inteligente IA',
+        heroTitle: 'Entrenador de Nutrición IA',
+        heroLead: 'Genere un plan dietético personalizado de 7 días que se adapte a la edad, el objetivo, el nivel de actividad y las necesidades nutricionales. Estructura de comidas realista, macros equilibradas y orientación adaptada a la edad.',
+        hintBar: 'Complete sus detalles y presione el botón para generar un plan semanal personalizado.',
+        labelAge: 'Edad',
+        labelWeight: 'Peso (kg)',
+        labelHeight: 'Altura (cm)',
+        labelGoal: 'Objetivo',
+        labelActivity: 'Nivel de actividad',
+        optMaintain: 'Mantener la salud',
+        optLose: 'Perder peso',
+        optGain: 'Ganar músculo',
+        optLow: 'Bajo',
+        optMedium: 'Medio',
+        optHigh: 'Alto',
+        generateBtn: 'Generar Plan de Dieta IA',
+        weeklyTitle: 'Plan semanal',
+        noteText: 'El plan de IA se crea para coincidir con su grupo de edad y objetivo. Cada día incluye desayuno, refrigerios, almuerzo y cena con un equilibrio de macros consistente.',
+        breakfast: 'Desayuno',
+        morningSnack: 'Bocadillo matutino',
+        lunch: 'Almuerzo',
+        afternoonSnack: 'Bocadillo por la tarde',
+        dinner: 'Cena',
+        protein: 'Proteína',
+        carbs: 'Carbohidratos',
+        fats: 'Grasas',
+        day: 'Día',
+        kcal: 'kcal',
+        calories: 'Calorías',
+        alertAge: 'Por favor, ingrese la edad, el peso y la altura.',
+        alertRange: 'Proporcione valores realistas dentro del rango válido.',
+        childLabel: 'Niño',
+        teenLabel: 'Adolescente',
+        adultLabel: 'Adulto',
+        elderlyLabel: 'Persona mayor',
+        lose: 'Un plan consciente de calorías enfocado en proteína magra, fibra y energía constante.',
+        maintain: 'Un plan equilibrado para energía estable y bienestar general.',
+        gain: 'Un plan rico en nutrientes para apoyar el crecimiento muscular y la recuperación.',
+        assistantPrefix: 'Asistente Nutricional IA:'
+      },
+      de: {
+        brandText: 'Intelligente Ernährung IA',
+        heroTitle: 'KI-Ernährungscoach',
+        heroLead: 'Erstellen Sie einen personalisierten 7-Tage-Diätplan, der sich an Alter, Ziel, Aktivitätsniveau und Ernährungsbedarf anpasst. Realistische Mahlzeitenstruktur, ausgewogene Makros und altersgerechte Anleitung.',
+        hintBar: 'Geben Sie Ihre Details ein und drücken Sie die Schaltfläche, um einen benutzerdefinierten Wochenplan zu generieren.',
+        labelAge: 'Alter',
+        labelWeight: 'Gewicht (kg)',
+        labelHeight: 'Höhe (cm)',
+        labelGoal: 'Ziel',
+        labelActivity: 'Aktivitätsniveau',
+        optMaintain: 'Gesundheit erhalten',
+        optLose: 'Gewicht verlieren',
+        optGain: 'Muskeln aufbauen',
+        optLow: 'Niedrig',
+        optMedium: 'Mittel',
+        optHigh: 'Hoch',
+        generateBtn: 'KI-Ernährungsplan erstellen',
+        weeklyTitle: 'Wochenplan',
+        noteText: 'Der KI-Plan wird erstellt, um Ihrer Altersgruppe und Ihrem Ziel zu entsprechen. Jeder Tag umfasst Frühstück, Snacks, Mittagessen und Abendessen mit konsistentem Makro-Gleichgewicht.',
+        breakfast: 'Frühstück',
+        morningSnack: 'Morgen-Snack',
+        lunch: 'Mittagessen',
+        afternoonSnack: 'Nachmittags-Snack',
+        dinner: 'Abendessen',
+        protein: 'Protein',
+        carbs: 'Kohlenhydrate',
+        fats: 'Fette',
+        day: 'Tag',
+        kcal: 'kcal',
+        calories: 'Kalorien',
+        alertAge: 'Bitte geben Sie Alter, Gewicht und Höhe ein.',
+        alertRange: 'Bitte geben Sie realistische Werte im gültigen Bereich ein.',
+        childLabel: 'Kind',
+        teenLabel: 'Jugendlicher',
+        adultLabel: 'Erwachsener',
+        elderlyLabel: 'Senior',
+        lose: 'Ein kalorienorientierter Plan mit Fokus auf mageres Protein, Ballaststoffe und stabiler Energie.',
+        maintain: 'Ein ausgewogener Plan für stabile Energie und allgemeines Wohlbefinden.',
+        gain: 'Ein nährstoffreiches Plan, das das Muskelwachstum und die Genesung unterstützt.',
+        assistantPrefix: 'KI-Ernährungsassistent:'
+      }
+    };
+
+    function getCurrentLang() {
+      return localStorage.getItem('lang') || 'en';
+    }
+
+    function getCurrentTheme() {
+      return localStorage.getItem('theme') || 'dark';
+    }
+
+    function setLang(lang) {
+      localStorage.setItem('lang', lang);
+      langSelect.value = lang;
+      updateTranslations();
+    }
+
+    function setTheme(theme) {
+      localStorage.setItem('theme', theme);
+      html.setAttribute('data-theme', theme);
+      updateThemeButton();
+    }
+
+    function updateTranslations() {
+      const lang = getCurrentLang();
+      const t = translations[lang];
+      document.getElementById('brandText').textContent = t.brandText;
+      document.getElementById('heroTitle').textContent = t.heroTitle;
+      document.getElementById('heroLead').textContent = t.heroLead;
+      document.getElementById('hintBar').textContent = t.hintBar;
+      document.getElementById('labelAge').textContent = t.labelAge;
+      document.getElementById('labelWeight').textContent = t.labelWeight;
+      document.getElementById('labelHeight').textContent = t.labelHeight;
+      document.getElementById('labelGoal').textContent = t.labelGoal;
+      document.getElementById('labelActivity').textContent = t.labelActivity;
+      document.getElementById('optMaintain').textContent = t.optMaintain;
+      document.getElementById('optLose').textContent = t.optLose;
+      document.getElementById('optGain').textContent = t.optGain;
+      document.getElementById('optLow').textContent = t.optLow;
+      document.getElementById('optMedium').textContent = t.optMedium;
+      document.getElementById('optHigh').textContent = t.optHigh;
+      document.getElementById('generateBtn').textContent = t.generateBtn;
+      document.getElementById('weeklyTitle').textContent = t.weeklyTitle;
+      document.getElementById('noteText').textContent = t.noteText;
+      document.getElementById('trackingTitle').textContent = t.trackingTitle;
+      document.getElementById('labelBreakfast').textContent = t.labelBreakfast;
+      document.getElementById('labelLunch').textContent = t.labelLunch;
+      document.getElementById('labelSnack').textContent = t.labelSnack;
+      document.getElementById('labelDinner').textContent = t.labelDinner;
+      document.getElementById('exerciseTitle').textContent = t.exerciseTitle;
+      document.getElementById('alertTitle').textContent = t.alertTitle;
+      document.getElementById('dashboardTitle').textContent = t.dashboardTitle;
+      html.setAttribute('lang', lang);
+      html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    }
+
+    function updateThemeButton() {
+      const theme = getCurrentTheme();
+      themeToggle.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    }
+
+    langSelect.addEventListener('change', (e) => setLang(e.target.value));
+    themeToggle.addEventListener('click', () => {
+      const theme = getCurrentTheme();
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+    });
+
+    const ageInput = document.getElementById('age');
+    const weightInput = document.getElementById('weight');
+    const heightInput = document.getElementById('height');
+    const goalInput = document.getElementById('goal');
+    const activityInput = document.getElementById('activity');
+    const generateBtn = document.getElementById('generateBtn');
+    const resultsSection = document.getElementById('results');
+    const dietGrid = document.getElementById('dietGrid');
+    const summaryText = document.getElementById('summaryText');
+    const assistantTip = document.getElementById('assistantTip');
+    const notificationBanner = document.getElementById('notificationBanner');
+
+    const activityFactor = { low: 1.2, medium: 1.45, high: 1.7 };
+    const goalFactor = { lose: 0.85, maintain: 1, gain: 1.15 };
+    const ageGroups = [
+      { key: 'child', max: 12, label: 'childLabel' },
+      { key: 'teen', max: 18, label: 'teenLabel' },
+      { key: 'adult', max: 60, label: 'adultLabel' },
+      { key: 'elderly', max: 130, label: 'elderlyLabel' }
+    ];
+
+    const mealTemplates = {
+      child: {
+        breakfast: ['Warm oatmeal with milk, banana, and honey', 'Banana pancakes with yogurt and berries', 'Soft scrambled eggs with avocado and toast', 'Fruit smoothie with spinach and oats'],
+        snack1: ['Apple with almond butter', 'Greek yogurt with fruit', 'Carrot sticks with hummus', 'Cheese with crackers'],
+        lunch: ['Grilled chicken wrap with veggies', 'Baked fish with sweet potato and peas', 'Turkey rice bowl with broccoli', 'Vegetable pasta with beef'],
+        snack2: ['Cottage cheese with pineapple', 'Trail mix', 'Fruit with nut butter', 'Mini pita with hummus'],
+        dinner: ['Roasted chicken with quinoa and broccoli', 'Meatballs with rice and carrots', 'Baked salmon with carrots and spinach', 'Lentil stew with bread']
+      },
+      teen: {
+        breakfast: ['Greek yogurt with granola and berries', 'Toast with avocado and egg', 'Smoothie with banana, berries, spinach', 'Oatmeal with apple and walnuts'],
+        snack1: ['Peanut butter banana sandwich', 'Hummus with veggies', 'Mixed nuts', 'Cottage cheese with peaches'],
+        lunch: ['Grilled chicken salad with quinoa', 'Turkey burrito bowl', 'Salmon sandwich', 'Pasta with chickpeas and peppers'],
+        snack2: ['Greek yogurt with honey', 'Fruit smoothie', 'Crackers with cheese', 'Veggie wrap with chicken'],
+        dinner: ['Grilled steak with sweet potato', 'Baked chicken with couscous', 'Shrimp stir-fry with rice', 'Turkey meatloaf with potatoes']
+      },
+      adult: {
+        breakfast: ['Spinach omelet with toast and avocado', 'Chia pudding with berries', 'Greek yogurt bowl with nuts', 'Oatmeal with apple and protein'],
+        snack1: ['Almonds with figs', 'Hummus with cucumber', 'Protein shake', 'Cottage cheese with tomatoes'],
+        lunch: ['Grilled salmon salad with quinoa', 'Chicken bowl with kale', 'Lentil soup', 'Turkey sandwich with greens'],
+        snack2: ['Greek yogurt with chia', 'Apple with peanut butter', 'Roasted chickpeas', 'Berry smoothie'],
+        dinner: ['Baked cod with broccoli and rice', 'Turkey chili', 'Tofu stir-fry with veggies', 'Grilled chicken with roasted carrots']
+      },
+      elderly: {
+        breakfast: ['Oatmeal with banana and flax', 'Poached eggs with spinach and toast', 'Smoothie with yogurt and berries', 'Ricotta toast with honey'],
+        snack1: ['Apple with cottage cheese', 'Almond butter on rice cakes', 'Steamed edamame', 'Soft cheese with crackers'],
+        lunch: ['Baked fish with mashed potato', 'Chicken stew with lentils', 'Vegetable barley soup', 'Turkey wrap with greens'],
+        snack2: ['Herbal tea with dates', 'Yogurt with walnuts', 'Toast with avocado', 'Fruit compote'],
+        dinner: ['Grilled chicken with greens and quinoa', 'Baked salmon with broccoli', 'Vegetable casserole with chickpeas', 'Lentil soup with bread']
+      }
+    };
+
+    function getAgeGroup(age) {
+      return ageGroups.find(g => age <= g.max)?.key || 'adult';
+    }
+
+    function getAgeLabel(age) {
+      const lang = getCurrentLang();
+      const t = translations[lang];
+      const group = ageGroups.find(g => age <= g.max);
+      return t[group?.label] || t.adultLabel;
+    }
+
+    function calculateBMR(weight, height, age, ageGroup) {
+      const base = 10 * weight + 6.25 * height - 5 * age + 5;
+      const mod = ageGroup === 'child' ? 0.95 : ageGroup === 'teen' ? 1.03 : ageGroup === 'elderly' ? 0.92 : 1;
+      return Math.round(base * mod);
+    }
+
+    function calculateDailyCalories(bmr, activity, goal, ageGroup) {
+      let total = bmr * activityFactor[activity] * goalFactor[goal];
+      if (ageGroup === 'child') total = Math.max(total * 0.95, 1300);
+      if (ageGroup === 'teen') total = Math.max(total * 1.10, bmr * 1.2);
+      if (ageGroup === 'elderly') total = Math.min(total * 0.92, 1900);
+      return Math.round(total);
+    }
+
+    function calculateMacros(cal, goal) {
+      let r = { protein: 0.22, carbs: 0.50, fats: 0.28 };
+      if (goal === 'lose') r = { protein: 0.26, carbs: 0.44, fats: 0.30 };
+      if (goal === 'gain') r = { protein: 0.24, carbs: 0.52, fats: 0.24 };
+      return { protein: Math.round((cal * r.protein) / 4), carbs: Math.round((cal * r.carbs) / 4), fats: Math.round((cal * r.fats) / 9) };
+    }
+
+    function chooseOption(opts, seed) {
+      return opts[seed % opts.length];
+    }
+
+    function buildDayPlan(dayIdx, ageGrp) {
+      const t = translations[getCurrentLang()];
+      const tpl = mealTemplates[ageGrp];
+      const seed = dayIdx * 7 + ageGrp.length;
+      return [
+        { label: t.breakfast, content: chooseOption(tpl.breakfast, seed + 1) },
+        { label: t.morningSnack, content: chooseOption(tpl.snack1, seed + 2) },
+        { label: t.lunch, content: chooseOption(tpl.lunch, seed + 3) },
+        { label: t.afternoonSnack, content: chooseOption(tpl.snack2, seed + 4) },
+        { label: t.dinner, content: chooseOption(tpl.dinner, seed + 5) }
+      ];
+    }
+
+    function renderDayCard(dayNum, meals, dayCal, macros) {
+      const t = translations[getCurrentLang()];
+      const card = document.createElement('article');
+      card.className = 'day-card';
+      card.innerHTML = `
+        <div class="day-title">
+          <h3>${t.day} ${dayNum}</h3>
+          <span class="summary-pill">${dayCal} ${t.kcal}</span>
+        </div>
+        <div class="macro-row">
+          <div class="macro-pill"><strong>${macros.protein}g</strong>${t.protein}</div>
+          <div class="macro-pill"><strong>${macros.carbs}g</strong>${t.carbs}</div>
+          <div class="macro-pill"><strong>${macros.fats}g</strong>${t.fats}</div>
+        </div>
+        <div class="meal-list">
+          ${meals.map(m => `<div class="meal-item"><strong>${m.label}</strong><span>${m.content}</span></div>`).join('')}
+        </div>
+      `;
+      return card;
+    }
+
+    function validateInputs(age, weight, height) {
+      const t = translations[getCurrentLang()];
+      if (!age || !weight || !height) {
+        alert(t.alertAge);
+        return false;
+      }
+      if (age < 4 || age > 100 || weight < 12 || weight > 200 || height < 90 || height > 230) {
+        alert(t.alertRange);
+        return false;
+      }
+      return true;
+    }
+
+    function generatePlan() {
+      const age = Number(ageInput.value);
+      const weight = Number(weightInput.value);
+      const height = Number(heightInput.value);
+      const goal = goalInput.value;
+      const activity = activityInput.value;
+      const t = translations[getCurrentLang()];
+
+      if (!validateInputs(age, weight, height)) return;
+
+      const ageGrp = getAgeGroup(age);
+      const ageLabel = getAgeLabel(age);
+      const bmr = calculateBMR(weight, height, age, ageGrp);
+      const dayCal = calculateDailyCalories(bmr, activity, goal, ageGrp);
+      const macros = calculateMacros(dayCal, goal);
+      
+      assistantTip.textContent = `${t.assistantPrefix} ${t[goal]} ${ageLabel} plan tuned for ${activity} activity.`;
+      summaryText.textContent = `${t.calories} • ${dayCal} ${t.kcal}`;
+      targetCalories.textContent = dayCal;
+      dietGrid.innerHTML = '';
+
+      for (let day = 1; day <= 7; day++) {
+        const meals = buildDayPlan(day - 1, ageGrp);
+        dietGrid.appendChild(renderDayCard(day, meals, dayCal, macros));
+      }
+
+      const exercisePlan = getExercisePlan(activity, goal);
+      renderExercisePlan(exercisePlan);
+      updateReminders(age, goal, activity);
+
+      resultsSection.classList.remove('hidden');
+      showNotification('🎯 Personalized plan is ready! The app also prepared your workout and sleep target.');
+      window.location.hash = '#results';
+    }
+
+    function showNotification(message, type = 'success', duration = 3200) {
+      notificationBanner.textContent = message;
+      notificationBanner.className = `notification-banner ${type}`;
+      notificationBanner.classList.remove('hidden');
+      setTimeout(() => notificationBanner.classList.add('hidden'), duration);
+    }
+
+    function getSleepRecommendation(age, goal) {
+      let base = 7.5;
+      if (age < 14) base = 9.5;
+      else if (age < 18) base = 9;
+      else if (age < 30) base = 8;
+      else if (age < 55) base = 7.5;
+      else base = 7;
+      if (goal === 'gain') base += 0.5;
+      if (goal === 'lose') base = Math.max(base - 0.2, 7);
+      return Math.round(base * 10) / 10;
+    }
+
+    const exerciseSuggestions = {
+      low: {
+        lose: [
+          { name: 'Brisk walking', duration: '30 min', cals: 220 },
+          { name: 'Bodyweight circuit', duration: '25 min', cals: 260 },
+          { name: 'Light cycling', duration: '30 min', cals: 240 }
+        ],
+        maintain: [
+          { name: 'Power walking', duration: '30 min', cals: 210 },
+          { name: 'Yoga strength flow', duration: '25 min', cals: 180 },
+          { name: 'Core mobility', duration: '20 min', cals: 150 }
+        ],
+        gain: [
+          { name: 'Resistance band training', duration: '25 min', cals: 230 },
+          { name: 'Dumbbell circuit', duration: '25 min', cals: 250 },
+          { name: 'Low-impact strength', duration: '30 min', cals: 260 }
+        ]
+      },
+      medium: {
+        lose: [
+          { name: 'Interval running', duration: '25 min', cals: 320 },
+          { name: 'Bodyweight HIIT', duration: '20 min', cals: 300 },
+          { name: 'Rowing session', duration: '20 min', cals: 280 }
+        ],
+        maintain: [
+          { name: 'Mixed cardio circuit', duration: '30 min', cals: 320 },
+          { name: 'Strength + mobility', duration: '30 min', cals: 300 },
+          { name: 'Cycling', duration: '30 min', cals: 330 }
+        ],
+        gain: [
+          { name: 'Weighted circuit', duration: '30 min', cals: 360 },
+          { name: 'Upper/lower strength split', duration: '30 min', cals: 340 },
+          { name: 'Functional lifting', duration: '30 min', cals: 350 }
+        ]
+      },
+      high: {
+        lose: [
+          { name: 'HIIT ladder', duration: '25 min', cals: 420 },
+          { name: 'Sprint intervals', duration: '20 min', cals: 430 },
+          { name: 'Kickboxing cardio', duration: '30 min', cals: 390 }
+        ],
+        maintain: [
+          { name: 'Advanced circuit', duration: '35 min', cals: 410 },
+          { name: 'Stair climbing', duration: '30 min', cals: 380 },
+          { name: 'Cross training', duration: '35 min', cals: 400 }
+        ],
+        gain: [
+          { name: 'Strength power set', duration: '35 min', cals: 420 },
+          { name: 'Heavy resistance training', duration: '35 min', cals: 430 },
+          { name: 'Athletic conditioning', duration: '30 min', cals: 410 }
+        ]
+      }
+    };
+
+    function renderExercisePlan(list) {
+      exerciseList.innerHTML = '';
+      list.forEach((exercise, index) => {
+        const item = document.createElement('div');
+        item.className = 'exercise-item';
+        item.innerHTML = `<span>${index + 1}. ${exercise.name}</span><span>${exercise.duration} • ${exercise.cals} kcal</span>`;
+        exerciseList.appendChild(item);
+      });
+      statExercises.textContent = list.length;
+      localStorage.setItem('exercisePlan', JSON.stringify({date: new Date().toDateString(), plan: list}));
+    }
+
+    function updateReminders(age, goal, activity) {
+      const sleepGoal = getSleepRecommendation(age, goal);
+      sleepReminder.textContent = `Your sleep target is ${sleepGoal} hours based on your profile.`;
+      waterReminder.textContent = `Aim for 8+ glasses today; stay consistent with your meals.`;
+      mealReminder.textContent = 'Breakfast 08:00 · Lunch 13:00 · Dinner 19:00';
+      updateWorkoutReminderText();
+    }
+
+    function getExercisePlan(activity, goal) {
+      return exerciseSuggestions[activity]?.[goal] || exerciseSuggestions.medium.maintain;
+    }
+
+    function saveWorkoutTime() {
+      if (!preferredWorkoutTime.value) {
+        showNotification('Please choose a workout time first.', 'warning');
+        return;
+      }
+      localStorage.setItem('workoutTime', preferredWorkoutTime.value);
+      activityReminder.textContent = `Your workout is set for ${preferredWorkoutTime.value}.`;
+      showNotification('✅ Workout time saved. The app will remind you to move at this time.');
+    }
+
+    // ===== TRACKING FUNCTIONS =====
+    const calorieBreakfast = document.getElementById('calorieBreakfast');
+    const calorieLunch = document.getElementById('calorieLunch');
+    const calorieSnack = document.getElementById('calorieSnack');
+    const calorieDinner = document.getElementById('calorieDinner');
+    const saveCaloriesBtn = document.getElementById('saveCaloriesBtn');
+    const exerciseList = document.getElementById('exerciseList');
+    const saveWorkoutTimeBtn = document.getElementById('saveWorkoutTimeBtn');
+    const preferredWorkoutTime = document.getElementById('preferredWorkoutTime');
+    const mealReminder = document.getElementById('mealReminder');
+    const waterReminder = document.getElementById('waterReminder');
+    const activityReminder = document.getElementById('activityReminder');
+    const sleepReminder = document.getElementById('sleepReminder');
+    const statCalories = document.getElementById('statCalories');
+    const statExercises = document.getElementById('statExercises');
+    const statSleep = document.getElementById('statSleep');
+    const statEnergy = document.getElementById('statEnergy');
+    const totalCalories = document.getElementById('totalCalories');
+    const targetCalories = document.getElementById('targetCalories');
+
+    function updateWorkoutReminderText() {
+      const time = preferredWorkoutTime.value;
+      activityReminder.textContent = time ? `Your workout is set for ${time}.` : 'Choose a preferred workout time so the app can remind you.';
+    }
+
+    updateWorkoutReminderText();
+    saveWorkoutTimeBtn.addEventListener('click', saveWorkoutTime);
+
+    // Save Calories Data
+    function updateCaloriesSummary() {
+      const breakfast = Number(calorieBreakfast.value) || 0;
+      const lunch = Number(calorieLunch.value) || 0;
+      const snack = Number(calorieSnack.value) || 0;
+      const dinner = Number(calorieDinner.value) || 0;
+      const total = breakfast + lunch + snack + dinner;
+      totalCalories.textContent = total;
+      statCalories.textContent = total;
+      localStorage.setItem('dailyCalories', JSON.stringify({date: new Date().toDateString(), calories: {breakfast, lunch, snack, dinner, total}}));
+    }
+
+    calorieBreakfast.addEventListener('change', updateCaloriesSummary);
+    calorieLunch.addEventListener('change', updateCaloriesSummary);
+    calorieSnack.addEventListener('change', updateCaloriesSummary);
+    calorieDinner.addEventListener('change', updateCaloriesSummary);
+
+    saveCaloriesBtn.addEventListener('click', () => {
+      updateCaloriesSummary();
+      showNotification('✅ Calories saved for today!');
+    });
+
+    // Load saved data on page load
+    function loadUserData() {
+      const savedCalories = JSON.parse(localStorage.getItem('dailyCalories') || '{}');
+      if (savedCalories.calories) {
+        calorieBreakfast.value = savedCalories.calories.breakfast || 0;
+        calorieLunch.value = savedCalories.calories.lunch || 0;
+        calorieSnack.value = savedCalories.calories.snack || 0;
+        calorieDinner.value = savedCalories.calories.dinner || 0;
+        updateCaloriesSummary();
+      }
+
+      const savedWorkoutTime = localStorage.getItem('workoutTime');
+      if (savedWorkoutTime) {
+        preferredWorkoutTime.value = savedWorkoutTime;
+        updateWorkoutReminderText();
+      }
+    }
+
+    generateBtn.addEventListener('click', generatePlan);
+
+    // Initialize
+    setTheme(getCurrentTheme());
+    setLang(getCurrentLang());
+    loadUserData();
+
+    // Set initial target calories
+    generateBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        const dayCal = summaryText.textContent.match(/\\d+/)?.[0];
+        if (dayCal) targetCalories.textContent = dayCal;
+      }, 500);
+    });
+  </script>
+</body>
+</html>
+
